@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>블루아카이브 AP 이월 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  /* 라이트 모드 변수 */
+  --bg:#F8F7F4; --surface:#FCFCFC; --surface2:#F2F0EB; --border:#C8C0B0; --text:#2A2520;
+  --text-dim:#464646; --accent:#3574C4; --accent2:#007AAE; --green:#159354; --red:#C0483A;
+  --yellow:#B45309; --orange:#DB3600; --pink:#DD7373; --hbg:linear-gradient(150deg,#3A6BAE,#2A5090);
+  --dhdr:linear-gradient(90deg,#3A6BAE,#4E82CC); --shadow:0 2px 12px rgba(80,65,50,.10);
+  --nb-bg: rgba(192,72,58,.04); --nb-text: #C04836;
+  --st-border: rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] {
+  /* 다크 모드 변수 */
+  --bg:#121418; --surface:#1E2126; --surface2:#282C34; --border:#383D46; --text:#E2E4E9;
+  --text-dim:#9BA1AD; --accent:#5C9DFF; --accent2:#4DBCE9; --green:#4ADE80; --red:#FB7185;
+  --yellow:#FACC15; --orange:#FB923C; --pink:#F472B6; --hbg:linear-gradient(150deg,#1A365D,#102A43);
+  --dhdr:linear-gradient(90deg,#2D3748,#4A5568); --shadow:0 4px 20px rgba(0,0,0,0.4);
+  --nb-bg: rgba(251,113,133,0.1); --nb-text: #FFB5C0;
+  --st-border: rgba(255,255,255,0.05);
+}
+
+/* 폰트 및 기본 레이아웃 고정 */
+*{box-sizing:border-box;margin:0;padding:0;letter-spacing:normal;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.2s,color 0.2s;overflow-y:scroll;line-height:1.5;}
+input, select, button { font-family: inherit; letter-spacing: normal; } /* 폰트/자간 고정 */
+
+.wrap{max-width:800px;margin:0 auto;padding:20px 16px 60px;}
+
+/* 헤더 */
+.main-title{text-align:center;padding:24px 20px 18px;background:var(--hbg);border-radius:14px;margin-bottom:18px;border:1px solid rgba(53,116,196,.25);position:relative;overflow:hidden;}
+.main-title h1{font-size:24px;font-weight:900;color:#E8F0FF;letter-spacing:-.5px;text-shadow:0 0 18px rgba(53,116,196,.5);}
+.main-title .sub{font-size:11px;color:rgba(220,230,255,.7);margin-top:5px;}
+
+/* 설정 패널 */
+.cfg{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:var(--shadow);}
+.cfg-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+.cfg-title{font-size:20px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;}
+.cfg-title::before{content:'⚙️';font-size:15px;}
+
+/* 테마 스위치 */
+.theme-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(22px); }
+.mode-label { font-size: 11px; font-weight: 700; color: var(--text-dim); margin-right: 8px; }
+
+/* 그리드 및 요소 수치 고정 */
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:520px){.cfg-grid{grid-template-columns:1fr;}}
+.cfg-g{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.cfg-lbl{font-size:14px;font-weight:700;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.5px;}
+
+input[type="date"], select { background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:6px 10px;font-size:13px;width:100%; height: 34px; }
+.btn-row{display:flex;gap:5px;}
+.tag-btn{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text-dim);padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;flex:1; transition: 0.1s;}
+.tag-btn.on{background:rgba(53,116,196,0.15);border-color:var(--accent);color:var(--accent);}
+.tag-btn.on2{background:rgba(53,116,196,0.15);border-color:var(--accent2);color:var(--accent2);}
+
+.chk-list{display:flex;flex-direction:column;gap:6px;}
+.chk-item{display:flex;align-items:center;gap:8px;cursor:pointer; padding: 4px 0;} /* 패딩 고정 */
+.chk-item input{display:none;}
+.chk-box{width:16px;height:16px;border:2px solid var(--border);border-radius:3px;background:var(--bg);display:flex;align-items:center;justify-content:center; flex-shrink:0;}
+.chk-item input:checked+.chk-box{background:var(--accent);border-color:var(--accent);}
+.chk-item input:checked+.chk-box::after{content:'✓';color:#fff;font-size:10px; font-weight: 900;}
+.chk-txt{font-size:13px;color:var(--text);}
+
+.go-btn{width:100%;margin-top:14px;padding:11px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(53,116,196,.3);transition:transform .2s,box-shadow .2s;}
+.go-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(53,116,196,.45);}
+.go-btn:active{transform:translateY(0);}
+.action-btn-row{display:none;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.action-btn-row.visible{display:grid;}
+.cap-btn{padding:10px;background:linear-gradient(90deg,#F8A1A4,#9B6DB5);border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 14px rgba(155,109,181,.3);}
+.cap-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(155,109,181,.45);}
+.cap-btn:active{transform:translateY(0);}
+.clip-btn{padding:10px;background:linear-gradient(90deg,#9B6DB5,#5B5BD6);border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 14px rgba(91,91,214,.3);}
+.clip-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,91,214,.45);}
+.clip-btn:active{transform:translateY(0);}
+
+/* 결과 출력 영역 */
+#out{display:none;}
+.ds{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:5px;box-shadow:var(--shadow);animation:fu .3s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.dh{background:var(--dhdr);padding:4px 12px;font-size:16px;font-weight:900;color:#E8F2FF;display:flex;align-items:center;gap:10px;}
+.dh .tag{font-size:12px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:3px;padding:1px 5px;}
+.bh{padding:4px 12px 3px;font-size:14px;font-weight:700;}
+.bh .t{color:var(--yellow);}
+.bh .tr{color:var(--orange);}
+
+.nb { margin: 4px 8px 8px 8px; background: var(--nb-bg); border-left: 3px solid var(--red); border-radius: 3px; padding: 6px 10px; font-size: 13px; color: var(--nb-text); line-height: 1.4; }
+.sl .nb { margin-left: 0px; margin-right: 0px; }
+.nb.b{background:rgba(92,157,255,0.1);border-color:var(--accent);color:var(--accent);}
+.nb.g{background:rgba(74,222,128,0.1);border-color:var(--green);color:var(--green);}
+.nb.o{background:var(--nb-bg);border-color:var(--red);color:var(--nb-text);}
+
+.sl{padding:0 12px 5px;}
+.st{display:flex;justify-content:space-between;align-items:center;padding:3px 0; border-bottom:1px solid var(--st-border); font-size:12.5px;gap:8px;}
+.st:last-child { border-bottom: none; }
+.sn{color:var(--text-dim);font-size:11px;font-weight:700;min-width:18px;font-family:'Rajdhani',sans-serif;}
+.sd{flex:1;color:var(--text);line-height:1.25;}
+.sd .hi {color:var(--green);font-weight:700;}
+.sd .wn {color:var(--yellow);font-weight:700;}
+.sd .bad{color:var(--red);font-weight:700;}
+.sd .inf{color:var(--accent);font-weight:700;}
+.opt{color:var(--pink);font-size:10.5px; font-weight: 500;}
+
+.ab{display:flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;flex-shrink:0; white-space: nowrap;}
+.av{font-size:13px;font-weight:700;color:var(--accent);}
+.aa{font-size:12px;font-weight:700;color:var(--green);}
+.aa.neg{color:var(--red);}
+
+.footer{text-align:center;font-size:11px;color:var(--text-dim);margin-top:20px;padding-top:14px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="main-title">
+    <h1>블루아카이브 AP 이월 가이드</h1>
+    <div class="sub">Blue Archive · AP Carry-Over Guide</div>
+  </div>
+  <div class="cfg">
+    <div class="cfg-header">
+      <div class="cfg-title">설정 커스터마이징</div>
+      <div style="display:flex; align-items:center;">
+        <span class="mode-label" id="mode-text">LIGHT</span>
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="cfg-grid">
+      <div class="cfg-g"><div class="cfg-lbl">📅 소모 시작일 (이벤트 시작)</div><input type="date" id="s-date"></div>
+      <div class="cfg-g"><div class="cfg-lbl">📦 AP 모으기 시작</div><div class="btn-row">
+        <button class="tag-btn" data-dday="3">D-3</button><button class="tag-btn" data-dday="2">D-2</button><button class="tag-btn" data-dday="1">D-1</button>
+      </div></div>
+      <div class="cfg-g"><div class="cfg-lbl">⏱️ AP 소모 시작 시간</div><select id="s-time"></select></div>
+      <div class="cfg-g"><div class="cfg-lbl">⚙️ 옵션 선택</div><div class="chk-list">
+        <label class="chk-item"><input type="checkbox" id="o-pkg" checked><span class="chk-box"></span><span class="chk-txt">2주 AP 패키지 구매</span></label>
+        <label class="chk-item"><input type="checkbox" id="o-af" checked><span class="chk-box"></span><span class="chk-txt">전술 대회 코인 구매</span></label>
+      </div></div>
+      <div class="cfg-g full"><div class="cfg-lbl">💎 AP 충전 구매 횟수 (일일)</div><div class="btn-row">
+        <button class="tag-btn" data-cnt="0">0회</button><button class="tag-btn" data-cnt="3">3회</button><button class="tag-btn" data-cnt="6">6회</button>
+      </div></div>
+    </div>
+    <button class="go-btn" onclick="gen()">✨ 가이드 생성하기</button>
+    <div class="action-btn-row" id="action-btns">
+      <button class="cap-btn" id="cap-btn" onclick="captureGuide()">📸 이미지로 저장</button>
+      <button class="clip-btn" id="clip-btn" onclick="copyGuide()">📋 클립보드 복사</button>
+    </div>
+  </div>
+  <div id="out"></div>
+  <div class="footer">블루아카이브 · AP 이월 가이드</div>
+</div>
+
+<script>
+// (기존 스크립트 그대로 유지)
+const MAX=999, CAFE=739, PKG=150, AF=360, NAT=240, DAILY=150, WEEK=150, FREE_PKG=10, CGAIN=120;
+const DOW=['일','월','화','수','목','금','토'];
+function toggleTheme() {
+  const isDark = document.getElementById('theme-toggle').checked;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('mode-text').textContent = isDark ? 'DARK' : 'LIGHT';
+  localStorage.setItem('ba-theme', isDark ? 'dark' : 'light');
+}
+// 저장된 테마 복원
+(function(){
+  const saved = localStorage.getItem('ba-theme');
+  if(saved === 'dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('theme-toggle').checked = true;
+    document.getElementById('mode-text').textContent = 'DARK';
+  }
+})();
+function sd(str, n){ const [y,m,d]=str.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+n); return dt; }
+const fdf=d=>`${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[d.getDay()]})`;
+const ds2s=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function nextTue(){ const t=new Date(); t.setHours(0,0,0,0); const diff=(2-t.getDay()+7)%7; t.setDate(t.getDate()+(diff===0?7:diff)); return ds2s(t); }
+
+(function(){
+  const sel=document.getElementById('s-time');
+  for(let h=0;h<24;h++) for(let m=0;m<60;m+=30){
+    const o=document.createElement('option');
+    o.value=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    o.textContent=`${String(h).padStart(2,'0')}시 ${String(m).padStart(2,'0')}분`;
+    if(h===4 && m===0) o.selected=true; sel.appendChild(o);
+  }
+  document.getElementById('s-date').value=nextTue();
+})();
+
+let dday=3, cnt=3;
+document.querySelectorAll('[data-dday]').forEach(b=>{ if(parseInt(b.dataset.dday)===3) b.classList.add('on'); b.addEventListener('click',()=>{ document.querySelectorAll('[data-dday]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); dday=parseInt(b.dataset.dday); }); });
+document.querySelectorAll('[data-cnt]').forEach(b=>{ if(parseInt(b.dataset.cnt)===3) b.classList.add('on2'); b.addEventListener('click',()=>{ document.querySelectorAll('[data-cnt]').forEach(x=>x.classList.remove('on2')); b.classList.add('on2'); cnt=parseInt(b.dataset.cnt); }); });
+
+function ag(ap, add){ const next=Math.min(ap+add, MAX), mail=Math.max(ap+add-MAX, 0); return {next, mail, got: next-ap}; }
+const nb=(html, c='r')=>`<div class="nb${c==='b'?' b':c==='g'?' g':c==='o'?' o':''}">${html}</div>`;
+function bdg(cur, mail){ const s=mail>=0?`+${mail}`:`${mail}`; return `<div class="ab"><span class="av">AP: ${cur}</span><span class="aa${mail<0?' neg':''}">(${s})</span></div>`; }
+function step(n, desc, cur, mail){ return `<div class="st"><span class="sn">${n}.</span><span class="sd">${desc}</span>${bdg(cur,mail)}</div>`; }
+
+function addCharge(charge, ap, mb, tmail, sn, h){ if(charge===0) return {ap, mb, tmail, sn, h}; const got=CGAIN*charge, r=ag(ap, got); mb+=r.mail; tmail+=r.mail; h+=step(sn++, `AP 충전 <span class="wn">${charge}회</span> 구매 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`, r.next, mb); ap=r.next; return {ap, mb, tmail, sn, h}; }
+
+function secStart(date, dN, tl){ return `<div class="ds"><div class="dh">📌 ${fdf(date)} <span class="tag">D-${dN} 준비 시작</span></div><div class="bh"><span class="t">${tl} 카페 AP 수거 및 보유 AP 전량 소진</span></div>${nb(`오늘 <strong>${tl}</strong>에 카페 AP를 수거하고 보유 중인 AP를 전량 소진하세요.<br>이후부터는 AP를 소모하지 않고 <strong>AP 999 를 보유한 상태를 유지</strong>합니다.`,'b')}</div>`; }
+
+function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
+  const {pkg, af, charge}=opts; let ap=NAT, mb=0, tmail=0, sn=1, h='';
+  const free=()=>{ const r=ag(ap,FREE_PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 무료 패키지 구매 <span class="hi">+${FREE_PKG} AP</span>`,r.next,mb); ap=r.next; };
+  if(isD1 && prevMail > 0){
+    ap=MAX; mb=prevMail; h+=step(sn++,`접속 시 <span class="hi">${MAX} AP</span> 보유`,ap,mb);
+    if(pkg){ mb+=PKG; tmail+=PKG; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,ap,mb); }
+    mb-=prevMail; h+=step(sn++,`어제 우편함으로 이동된 <span class="bad">${prevMail} AP</span> 소모`,ap,mb);
+    h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>TR-4 등에서 <strong>AP를 1 이상 소모</strong>한 뒤 카페 수거를 진행하세요.`);
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
+    free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
+    if(charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
+  } else {
+    h+=step(sn++,`접속 시 자연회복된 분량인 <span class="hi">${NAT} AP</span> 보유`,ap,mb);
+    if(pkg){ const r=ag(ap,PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,r.next,mb); ap=r.next; }
+    ({ap,mb,tmail,sn,h}=addCharge(charge,ap,mb,tmail,sn,h));
+    h+=nb(`999AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
+    free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
+    if(isD1 && charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
+  }
+  let foot=(tmail>0)?(isD1?nb(`오늘 우편함으로 이월된 <strong>${tmail} AP</strong>는 내일(소모 당일) 중 반드시 소모해야 합니다. (우편함 24시간 제한)`):nb(`오늘 우편함에 들어간 AP는 일부 또는 전부 오늘 사용해도 무방합니다.<br>단, 우편함에 들어가지 않은 보유 중인 AP는 유지해 주세요.`,'o')):'';
+  let hdr=isD1 && rng ? `<div class="bh"><span class="tr">${rng} 사이에 접속</span></div>${nb(`우편함에 보관된 AP는 <strong>수령 후 24시간</strong>이 지나면 소멸됩니다.<br>서버 오픈 지연 및 AP 소모에 필요한 시간을 고려하여 접속 시간에 주의해주세요.`,'b')}` : `<div class="bh"><span class="t">${tl} 이내 접속</span></div>`;
+  return { html:`<div class="ds"><div class="dh">📅 ${fdf(date)} <span class="tag">${lbl}</span></div>${hdr}<div class="sl">${h}</div>${foot}</div>`, mailbox: tmail };
+}
+
+function secD0(date, opts, tl, prevMail){
+  const {pkg, af, charge}=opts; let ap=MAX, mb=prevMail, sn=1, h='';
+  h+=step(sn++,`접속 시 <span class="hi">${MAX} AP</span> 보유`,ap,mb);
+  if(pkg){ mb+=PKG; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 획득 → <span class="hi">우편함</span>`,ap,mb); }
+  { const r=ag(ap,CAFE); mb+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
+  { const r=ag(ap,DAILY); mb+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
+  { const r=ag(ap,FREE_PKG); mb+=r.mail; h+=step(sn++,`일일 무료 패키지 구매 <span class="hi">+${FREE_PKG} AP</span>`,r.next,mb); ap=r.next; }
+  { const r=ag(ap,WEEK); mb+=r.mail; h+=step(sn++,`주간 미션 <span class="hi">${WEEK} AP</span> 수령`,r.next,mb); ap=r.next; }
+  if(af){ const r=ag(ap,AF); mb+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
+  if(charge>0){ 
+    const got=CGAIN*charge, r=ag(ap,got); 
+    mb+=r.mail; 
+    h+=step(sn++,`AP 충전 ${charge}회 구매 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`,r.next,mb); 
+    ap=r.next; 
+  }
+  const total=ap+mb; h+=`<div class="st"><span class="sn">${sn++}.</span><span class="sd"><span class="bad">모든 AP 소모 -${total} AP</span></span><div class="ab"><span class="av">AP: ${ap}</span><span class="aa">(+${mb})</span></div></div>`;
+  const [d0H,d0M]=tl.replace('시 ','시').replace('분','').split('시').map(Number);
+  const em=d0M+30, eh=d0H+Math.floor(em/60), eLabel=`${String(((eh%24)+24)%24).padStart(2,'0')}시 ${String(em%60).padStart(2,'0')}분`;
+  
+  const lastNb = nb(`이벤트 시작 후에는 일반 AP 소모 루틴으로 복귀합니다.<br>우편함에 남아 있는 AP가 있다면 <strong>24시간 이내</strong>에 수령하세요.`, 'b');
+  
+  return `<div class="ds"><div class="dh">🎯 ${fdf(date)} <span class="tag">D-0 소모 당일</span></div><div class="bh"><span class="tr">서버 오픈 또는 ${tl}부터 ${eLabel}까지 — 모든 AP 수령 및 소모</span></div>${nb(`아래는 소모 가능한 AP를 보여주기 위해 수령 가능한 AP를 먼저 기재했습니다.<br>실제 실행 시에는 <strong>접속 즉시 AP 소모부터</strong> 하는 것을 권장합니다.`,'g')}<div class="sl">${h}</div>${lastNb}</div>`;
+}
+
+function gen(){
+  const dateStr=document.getElementById('s-date').value; if(!dateStr){alert('소모 시작일을 선택해주세요!');return;}
+  const pkg=document.getElementById('o-pkg').checked, af=document.getElementById('o-af').checked, tv=document.getElementById('s-time').value, [cH,cM]=tv.split(':').map(Number), tl=`${String(cH).padStart(2,'0')}시 ${String(cM).padStart(2,'0')}분`, rng=d1range(cH,cM), opts={pkg,af,charge:cnt};
+  const out=document.getElementById('out'); out.style.display='block'; out.innerHTML='';
+  const secs=[]; let carry=0, days=[]; for(let i=dday;i>=0;i--) days.push({date:sd(dateStr,-i),dN:i});
+  days.forEach(({date,dN})=>{
+    if(dN===dday && dN>0){ if(dN===1){ const r=secMid(date,'D-1',opts,tl,carry,true,rng); secs.push(r.html); carry=r.mailbox; } else { secs.push(secStart(date,dN,tl)); carry=0; } }
+    else if(dN>0){ const isD1=(dN===1), r=secMid(date,`D-${dN}`,opts,tl,carry,isD1,isD1?rng:null); secs.push(r.html); carry=r.mailbox; }
+    else secs.push(secD0(date,opts,tl,carry));
+  });
+  out.innerHTML=secs.map((s,i)=>s.replace('<div class="ds">',`<div class="ds" style="animation-delay:${i*.06}s">`)).join('');
+  document.getElementById('action-btns').classList.add('visible');
+  setTimeout(()=>out.scrollIntoView({behavior:'smooth',block:'start'}), 50);
+}
+
+async function captureGuide(){
+  const out=document.getElementById('out'), btn=document.getElementById('cap-btn'), isDark=document.getElementById('theme-toggle').checked;
+  btn.disabled=true; btn.textContent='⏳ 생성 중...';
+  const fix=document.createElement('style'); fix.id='_cap_fix'; fix.textContent='#out .ds{animation:none!important;opacity:1!important;transform:none!important;}'; document.head.appendChild(fix);
+  await new Promise(r=>setTimeout(r,150));
+  try{
+    const canvas=await html2canvas(out,{ backgroundColor: isDark?'#121418':'#F8F7F4', scale:2, useCORS:true, logging:false, width:out.offsetWidth, height:out.scrollHeight+20 });
+    const dateStr=document.getElementById('s-date').value||'guide';
+    const link=document.createElement('a'); link.download=`AP이월가이드_${dateStr}.jpg`; link.href=canvas.toDataURL('image/jpeg',0.95); link.click();
+  }catch(e){ alert('이미지 저장에 실패했습니다.'); console.error(e);
+  }finally{ document.getElementById('_cap_fix').remove(); btn.disabled=false; btn.textContent='📸 이미지로 저장'; }
+}
+
+async function copyGuide(){
+  const out=document.getElementById('out'), btn=document.getElementById('clip-btn'), isDark=document.getElementById('theme-toggle').checked;
+  btn.disabled=true; btn.textContent='⏳ 복사 중...';
+  const fix=document.createElement('style'); fix.id='_cap_fix2'; fix.textContent='#out .ds{animation:none!important;opacity:1!important;transform:none!important;}'; document.head.appendChild(fix);
+  await new Promise(r=>setTimeout(r,150));
+  try{
+    const canvas=await html2canvas(out,{ backgroundColor: isDark?'#121418':'#F8F7F4', scale:2, useCORS:true, logging:false, width:out.offsetWidth, height:out.scrollHeight+20 });
+    canvas.toBlob(async(blob)=>{
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        btn.textContent='✅ 복사 완료!';
+        setTimeout(()=>{ btn.disabled=false; btn.textContent='📋 클립보드 복사'; }, 2000);
+      }catch(e){
+        alert('클립보드 복사에 실패했습니다.\n브라우저 권한을 확인해주세요.'); console.error(e);
+        btn.disabled=false; btn.textContent='📋 클립보드 복사';
+      }
+    },'image/png');
+  }catch(e){ alert('이미지 생성에 실패했습니다.'); console.error(e); btn.disabled=false; btn.textContent='📋 클립보드 복사';
+  }finally{ document.getElementById('_cap_fix2').remove(); }
+}
+function d1range(cH, cM){ const ft=(h,m)=>{ let hh=h,mm=m; if(mm>=60){hh++;mm-=60;} hh=((hh%24)+24)%24; return `${String(hh).padStart(2,'0')}시 ${String(mm).padStart(2,'0')}분`; }; return `${ft(cH,cM+30)}~${ft(cH+1,cM)}`; }
+</script>
+</body>
+</html>
