@@ -13,7 +13,7 @@
   --text-dim:#464646; --accent:#3574C4; --accent2:#007AAE; --green:#159354; --red:#C0483A;
   --yellow:#B45309; --orange:#DB3600; --pink:#DD7373; --hbg:linear-gradient(150deg,#3A6BAE,#2A5090);
   --dhdr:linear-gradient(90deg,#3A6BAE,#4E82CC); --shadow:0 2px 12px rgba(80,65,50,.10);
-  --nb-bg: rgba(192,72,58,.04); --nb-text: #C04836;
+  --nb-bg: rgba(192,72,58,.04); --nb-text: #9A3020;
   --st-border: rgba(0,0,0,0.05);
 }
 
@@ -61,6 +61,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .cfg-lbl{font-size:14px;font-weight:700;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.5px;}
 
 input[type="date"], select { background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:6px 10px;font-size:13px;width:100%; height: 34px; }
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.6); cursor:pointer; }
 .btn-row{display:flex;gap:5px;}
 .tag-btn{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text-dim);padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;flex:1; transition: 0.1s;}
 .tag-btn.on{background:rgba(53,116,196,0.15);border-color:var(--accent);color:var(--accent);}
@@ -125,7 +126,7 @@ input[type="date"], select { background:var(--bg);border:1px solid var(--border)
 <body>
 <div class="wrap">
   <div class="main-title">
-    <h1>블루아카이브 AP 이월 가이드</h1>
+    <h1>블루 아카이브 AP 이월 가이드</h1>
     <div class="sub">Blue Archive · AP Carry-Over Guide</div>
   </div>
   <div class="cfg">
@@ -160,7 +161,7 @@ input[type="date"], select { background:var(--bg);border:1px solid var(--border)
     </div>
   </div>
   <div id="out"></div>
-  <div class="footer">블루아카이브 · AP 이월 가이드</div>
+  <div class="footer">AP 이월 가이드 · 블루아카이브</div>
 </div>
 
 <script>
@@ -207,9 +208,18 @@ const nb=(html, c='r')=>`<div class="nb${c==='b'?' b':c==='g'?' g':c==='o'?' o':
 function bdg(cur, mail){ const s=mail>=0?`+${mail}`:`${mail}`; return `<div class="ab"><span class="av">AP: ${cur}</span><span class="aa${mail<0?' neg':''}">(${s})</span></div>`; }
 function step(n, desc, cur, mail){ return `<div class="st"><span class="sn">${n}.</span><span class="sd">${desc}</span>${bdg(cur,mail)}</div>`; }
 
-function addCharge(charge, ap, mb, tmail, sn, h){ if(charge===0) return {ap, mb, tmail, sn, h}; const got=CGAIN*charge, r=ag(ap, got); mb+=r.mail; tmail+=r.mail; h+=step(sn++, `AP 충전 <span class="wn">${charge}회</span> 구매 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`, r.next, mb); ap=r.next; return {ap, mb, tmail, sn, h}; }
+function addCharge(charge, ap, mb, tmail, sn, h){
+  if(charge===0) return {ap, mb, tmail, sn, h};
+  const got=CGAIN*charge;
+  const afterCharge=Math.min(ap+got, MAX); // 충전 후 999 상한
+  h+=step(sn++, `AP 충전 <span class="wn">${charge}회</span> 구매 및 소모 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`, afterCharge, mb);
+  ap=afterCharge; // 초과분은 소모해서 999 유지, mb/tmail 변화 없음
+  return {ap, mb, tmail, sn, h};
+}
 
-function secStart(date, dN, tl){ return `<div class="ds"><div class="dh">📌 ${fdf(date)} <span class="tag">D-${dN} 준비 시작</span></div><div class="bh"><span class="t">${tl} 카페 AP 수거 및 보유 AP 전량 소진</span></div>${nb(`오늘 <strong>${tl}</strong>에 카페 AP를 수거하고 보유 중인 AP를 전량 소진하세요.<br>이후부터는 AP를 소모하지 않고 <strong>AP 999 를 보유한 상태를 유지</strong>합니다.`,'b')}</div>`; }
+function secStart(date, dN, tl){
+  return `<div class="ds"><div class="dh">📌 ${fdf(date)} <span class="tag">D-${dN} 준비 시작</span></div><div class="bh"><span class="t">${tl} 카페 AP 수거 및 보유 AP 전량 소진</span></div>${nb(`오늘 <strong>${tl}</strong>에 카페 AP를 수거하고 보유 중인 AP를 전량 소진하세요.<br>이후부터는 AP를 소모하지 않고 <strong>AP 999 를 보유한 상태를 유지</strong>합니다.`,'b')}</div>`;
+}
 
 function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
   const {pkg, af, charge}=opts; let ap=NAT, mb=0, tmail=0, sn=1, h='';
@@ -227,14 +237,14 @@ function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
     h+=step(sn++,`접속 시 자연회복된 분량인 <span class="hi">${NAT} AP</span> 보유`,ap,mb);
     if(pkg){ const r=ag(ap,PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,r.next,mb); ap=r.next; }
     ({ap,mb,tmail,sn,h}=addCharge(charge,ap,mb,tmail,sn,h));
-    h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
+    h+=nb(`999AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
     { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
     free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
     if(isD1 && charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
   }
   let foot=(tmail>0)?(isD1?nb(`오늘 우편함으로 이월된 <strong>${tmail} AP</strong>는 내일(소모 당일) 중 반드시 소모해야 합니다. (우편함 24시간 제한)`):nb(`오늘 우편함에 들어간 AP는 일부 또는 전부 오늘 사용해도 무방합니다.<br>단, 우편함에 들어가지 않은 보유 중인 AP는 유지해 주세요.`,'o')):'';
-  let hdr=isD1 && rng ? `<div class="bh"><span class="tr">${rng} 사이에 접속</span></div>${nb(`우편함에 보관된 AP는 <strong>수령 후 24시간</strong>이 지나면 소멸됩니다.<br>서버 오픈 지연 및 AP 소모에 필요한 시간을 고려하여 접속 시간에 주의해 주세요.`,'b')}` : `<div class="bh"><span class="t">${tl} 이내 접속</span></div>`;
+  let hdr=isD1 && rng ? `<div class="bh"><span class="tr">${rng} 사이에 접속</span></div>${nb(`우편함에 보관된 AP는 <strong>수령 후 24시간</strong>이 지나면 소멸됩니다.<br>서버 오픈 지연 및 AP 소모에 필요한 시간을 고려하여 접속 시간에 주의해주세요.`,'b')}` : `<div class="bh"><span class="t">${tl} 이내 접속</span></div>`;
   return { html:`<div class="ds"><div class="dh">📅 ${fdf(date)} <span class="tag">${lbl}</span></div>${hdr}<div class="sl">${h}</div>${foot}</div>`, mailbox: tmail };
 }
 
@@ -250,7 +260,7 @@ function secD0(date, opts, tl, prevMail){
   if(charge>0){ 
     const got=CGAIN*charge, r=ag(ap,got); 
     mb+=r.mail; 
-    h+=step(sn++,`AP 충전 ${charge}회 구매 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`,r.next,mb); 
+    h+=step(sn++,`AP 충전 ${charge}회 구매 및 소모 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`,r.next,mb); 
     ap=r.next; 
   }
   const total=ap+mb; h+=`<div class="st"><span class="sn">${sn++}.</span><span class="sd"><span class="bad">모든 AP 소모 -${total} AP</span></span><div class="ab"><span class="av">AP: ${ap}</span><span class="aa">(+${mb})</span></div></div>`;
