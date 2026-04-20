@@ -229,7 +229,7 @@ function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
     if(pkg){ mb+=PKG; tmail+=PKG; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,ap,mb); }
     mb-=prevMail; h+=step(sn++,`어제 우편함으로 이동된 <span class="bad">${prevMail} AP</span> 소모`,ap,mb);
     h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>TR-4 등에서 <strong>AP를 1 이상 소모</strong>한 뒤 카페 수거를 진행하세요.`);
-    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
     free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
     if(charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
@@ -238,7 +238,7 @@ function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
     if(pkg){ const r=ag(ap,PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,r.next,mb); ap=r.next; }
     ({ap,mb,tmail,sn,h}=addCharge(charge,ap,mb,tmail,sn,h));
     h+=nb(`999AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
-    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거${isD1?'':` <span class="inf">(${tl}까지)</span>`}`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
     free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
     if(isD1 && charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
