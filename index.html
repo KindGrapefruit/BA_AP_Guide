@@ -211,9 +211,9 @@ function step(n, desc, cur, mail){ return `<div class="st"><span class="sn">${n}
 function addCharge(charge, ap, mb, tmail, sn, h){
   if(charge===0) return {ap, mb, tmail, sn, h};
   const got=CGAIN*charge;
-  const afterCharge=Math.min(ap+got, MAX); // 충전 후 999 상한
+  const afterCharge=Math.min(ap+got, MAX);
   h+=step(sn++, `AP 충전 <span class="wn">${charge}회</span> 구매 및 소모 (<span class="hi">+${got} AP</span>)<span class="opt"> (선택사항)</span>`, afterCharge, mb);
-  ap=afterCharge; // 초과분은 소모해서 999 유지, mb/tmail 변화 없음
+  ap=afterCharge;
   return {ap, mb, tmail, sn, h};
 }
 
@@ -222,53 +222,92 @@ function secStart(date, dN, tl){
 }
 
 function secMid(date, lbl, opts, tl, prevMail, isD1, rng){
-  const {pkg, af, charge}=opts; let ap=NAT, mb=0, tmail=0, sn=1, h='';
+  const {pkg, af, charge}=opts; let ap=0, mb=0, tmail=0, sn=1, h='';
   const free=()=>{ const r=ag(ap,FREE_PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 무료 패키지 구매 <span class="hi">+${FREE_PKG} AP</span>`,r.next,mb); ap=r.next; };
 
-  // ── D-1, 전날 이월 있음 (무료패키지 10AP 초과) ──
   if(isD1 && prevMail > FREE_PKG){
-    ap=MAX; mb=prevMail; h+=step(sn++,`접속 시 <span class="hi">${MAX} AP</span> 보유`,ap,mb);
+    // ── D-1, 전날(D-2) 이월 있음 → 999 만충 시작 ──
+    // D-3 선택 시: D-2 수집 → 우편함 이월 → D-1에서 소모
+    ap=MAX; mb=prevMail;
+    h+=step(sn++,`접속 시 <span class="hi">${MAX} AP</span> 보유`,ap,mb);
     if(pkg){ mb+=PKG; tmail+=PKG; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,ap,mb); }
     mb-=prevMail; h+=step(sn++,`어제 우편함으로 이동된 <span class="bad">${prevMail} AP</span> 소모`,ap,mb);
     h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>TR-4 등에서 <strong>AP를 1 이상 소모</strong>한 뒤 카페 수거를 진행하세요.`);
     { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
-    free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
+    free();
+    if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
     if(charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
 
-  // ── D-1, 무료패키지(10AP)만 우편함에 잔여 ──
   } else if(isD1 && prevMail === FREE_PKG){
+    // ── D-1, 무료패키지(10AP)만 우편함에 잔여 ──
     ap=MAX; mb=prevMail;
     h+=step(sn++,`접속 시 <span class="hi">${MAX} AP</span> 보유`,ap,mb);
     if(pkg){ mb+=PKG; tmail+=PKG; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,ap,mb); }
-    mb-=prevMail; // 뱃지 계산에서 제거 (소모 스텝 없음, 7일 보관)
+    mb-=prevMail;
     h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>TR-4 등에서 <strong>AP를 1 이상 소모</strong>한 뒤 카페 수거를 진행하세요.`);
     { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
-    free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
+    free();
+    if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매`,r.next,mb); ap=r.next; }
     if(charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
 
-  // ── D-2 등 일반 수집일 (또는 D-1 이월 없음) ──
+  } else if(isD1 && prevMail === 0){
+    // ── D-1 선택, 전날 소진 없음 → 0AP 시작 ──
+    // 게임 내 날짜는 04:00 기준으로 변경됨
+    // 소모시각(D-1 04:00) 직후 AP=0에서 하루치 수급
+    // D-0 접속은 날짜 변경(04:00) 직전에 해야 전일 보상 수령 가능
+    // → 소모시각 -30분~-10분 (예: 03:30~03:50) 접속 권장
+    ap=0;
+    h+=nb(`<strong>${tl} 이후 AP 전량 소모</strong><br>
+내일(D-0) 재접속은 반드시 <strong>${rng} 사이</strong>에 하시어 보상을 수령해 주세요.`,'b');
+    h+=step(sn++,`소모 후 보유 AP <span class="hi">0 AP</span>`,ap,mb);
+    // 자연회복: 소모~접속 시간 ≈ 23시간 30~50분 → ~235~237AP
+    // 단순화해서 NAT(240)로 표시하되 안내문으로 설명
+    { const r=ag(ap,NAT); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`자연회복 분량 보유 <span class="hi">~${NAT} AP</span> <span class="opt">(접속 시각에 따라 235~240 AP)</span>`,r.next,mb); ap=r.next; }
+    if(pkg){ const r=ag(ap,PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,r.next,mb); ap=r.next; }
+    ({ap,mb,tmail,sn,h}=addCharge(charge,ap,mb,tmail,sn,h));
+    h+=nb(`999 AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(오늘 보상 — 04시 이전 수령)</span>`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
+    free();
+    if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
+    if(charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
+
   } else {
+    // ── D-2 등 일반 수집일 (전날 999 만충 시작) ──
+    ap=MAX; mb=0;
     h+=step(sn++,`접속 시 자연회복된 분량인 <span class="hi">${NAT} AP</span> 보유`,ap,mb);
     if(pkg){ const r=ag(ap,PKG); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`2주 AP 패키지 <span class="hi">${PKG} AP</span> 자동 수령`,r.next,mb); ap=r.next; }
     ({ap,mb,tmail,sn,h}=addCharge(charge,ap,mb,tmail,sn,h));
     h+=nb(`999AP를 보유한 상태에서는 <strong>총력전, 전술 대회, 카페 등의 자원 수거가 제한</strong>됩니다.<br>다음 단계로 넘어가기 전 할 일을 모두 끝마쳤는지 확인하세요.`);
-    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거${isD1?'':` <span class="inf">(${tl}까지)</span>`}`,r.next,mb); ap=r.next; }
+    { const r=ag(ap,CAFE); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`카페 AP <span class="hi">${CAFE} AP</span> 수거 <span class="inf">(${tl}까지)</span>`,r.next,mb); ap=r.next; }
     { const r=ag(ap,DAILY); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`일일 미션 <span class="hi">${DAILY} AP</span> 수령`,r.next,mb); ap=r.next; }
-    free(); if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
-    if(isD1 && charge>0){ h+=step(sn++, `<span class="bad">${CGAIN*charge} AP 사용</span> 및 AP 충전 ${charge}회로 <span class="hi">${CGAIN*charge} AP</span> 획득<span class="opt"> (선택사항)</span>`, ap, mb); }
+    free();
+    if(af){ const r=ag(ap,AF); mb+=r.mail; tmail+=r.mail; h+=step(sn++,`전술 대회 코인 <span class="hi">90AP×4회</span> 구매<span class="opt"> (선택사항)</span>`,r.next,mb); ap=r.next; }
   }
 
-  // tmailToUse: D-2 당일 소모해야 할 실제 수량 (FREE_PKG 제외)
+  // D-2: 실제 이월량 전체를 D-1으로 전달 (버그 수정: FREE_PKG만 넘기던 것 수정)
+  // D-1: D-0으로 넘길 이월량
   const tmailToUse = Math.max(tmail - FREE_PKG, 0);
-  // tmailForNext: D-1으로 넘기는 prevMail (우편함 이월 있으면 FREE_PKG만, 없으면 0)
-  const tmailForNext = isD1 ? tmail : (tmail > 0 ? FREE_PKG : 0);
+  const tmailForNext = tmail; // 실제 우편함 이월량 전체 전달
 
-  let foot=(tmail>0)?(isD1
-    ? nb(`오늘 우편함으로 이월된 <strong>${tmail} AP</strong>는 내일(소모 당일) 중 반드시 소모해야 합니다. (우편함 24시간 제한)`)
-    : nb(`오늘 우편함으로 이월된 AP는 <strong>24시간 이내</strong>에 반드시 소모해야 합니다.<br>일일 무료 패키지 <strong>${FREE_PKG}AP</strong>를 제외한<strong>${tmailToUse} AP</strong>를 오늘 중으로 소모해 주세요.`,'o')):'';
-  let hdr=isD1 && rng ? `<div class="bh"><span class="tr">${rng} 사이에 접속</span></div>${nb(`우편함에 보관된 AP는 <strong>수령 후 24시간</strong>이 지나면 소멸됩니다.<br>서버 오픈 지연 및 AP 소모에 필요한 시간을 고려하여 접속 시간에 주의해주세요.`,'b')}` : `<div class="bh"><span class="t">${tl} 접속</span></div>`;
+  let foot='';
+  if(tmail > 0){
+    if(isD1){
+      foot = nb(`오늘 우편함으로 이월된 <strong>${tmail} AP</strong>는 내일(소모 당일) 중 반드시 소모해야 합니다. (우편함 24시간 제한)`);
+    } else {
+      foot = nb(`오늘 우편함으로 이월된 AP는 <strong>24시간 이내</strong>에 반드시 소모해야 합니다.<br>일일 무료 패키지 <strong>${FREE_PKG} AP</strong>를 제외한 <strong>${tmailToUse} AP</strong>를 오늘 중으로 소모해 주세요.`,'o');
+    }
+  }
+
+  let hdr = isD1 && rng
+    ? `<div class="bh"><span class="tr">${rng} 사이에 접속</span></div>${nb(`우편함에 보관된 AP는 <strong>수령 후 24시간</strong>이 지나면 소멸됩니다.<br>서버 오픈 지연 및 AP 소모에 필요한 시간을 고려하여 접속 시간에 주의해주세요.`,'b')}`
+    : `<div class="bh"><span class="t">${tl} 접속</span></div>`;
+
+  // D-1 선택(prevMail=0)은 헤더가 안내문으로 대체되므로 별도 처리 없음
+  if(isD1 && prevMail === 0) hdr = '';
+
   return { html:`<div class="ds"><div class="dh">📅 ${fdf(date)} <span class="tag">${lbl}</span></div>${hdr}<div class="sl">${h}</div>${foot}</div>`, mailbox: tmailForNext };
 }
 
@@ -298,7 +337,9 @@ function secD0(date, opts, tl, prevMail){
 
 function gen(){
   const dateStr=document.getElementById('s-date').value; if(!dateStr){alert('소모 시작일을 선택해주세요!');return;}
-  const pkg=document.getElementById('o-pkg').checked, af=document.getElementById('o-af').checked, tv=document.getElementById('s-time').value, [cH,cM]=tv.split(':').map(Number), tl=`${String(cH).padStart(2,'0')}시 ${String(cM).padStart(2,'0')}분`, rng=d1range(cH,cM), opts={pkg,af,charge:cnt};
+  const pkg=document.getElementById('o-pkg').checked, af=document.getElementById('o-af').checked, tv=document.getElementById('s-time').value, [cH,cM]=tv.split(':').map(Number), tl=`${String(cH).padStart(2,'0')}시 ${String(cM).padStart(2,'0')}분`;
+  const isD1Solo = (dday === 1); // D-1 선택 시 단독 수집일
+  const rng=d1range(cH,cM,isD1Solo), opts={pkg,af,charge:cnt};
   const out=document.getElementById('out'); out.style.display='block'; out.innerHTML='';
   const secs=[]; let carry=0, days=[]; for(let i=dday;i>=0;i--) days.push({date:sd(dateStr,-i),dN:i});
   days.forEach(({date,dN})=>{
@@ -344,7 +385,19 @@ async function copyGuide(){
   }catch(e){ alert('이미지 생성에 실패했습니다.'); console.error(e); btn.disabled=false; btn.textContent='📋 클립보드 복사';
   }finally{ document.getElementById('_cap_fix2').remove(); }
 }
-function d1range(cH, cM){ const ft=(h,m)=>{ let hh=h,mm=m; if(mm>=60){hh++;mm-=60;} hh=((hh%24)+24)%24; return `${String(hh).padStart(2,'0')}시 ${String(mm).padStart(2,'0')}분`; }; return `${ft(cH,cM+30)}~${ft(cH+1,cM)}`; }
+// D-1 접속 권장 시간
+// D-3/D-2 선택(prevMail>0): 소모시각 +30분~+1시간 (우편함 이월 소모 목적)
+// D-1 선택(prevMail=0): 소모시각 -30분~-10분 (날짜 변경 04:00 직전, 전일 보상 수령)
+function d1range(cH, cM, isD1Solo){
+  const ft=(h,m)=>{ let hh=h,mm=m; if(mm>=60){hh++;mm-=60;} if(mm<0){hh--;mm+=60;} hh=((hh%24)+24)%24; return `${String(hh).padStart(2,'0')}시 ${String(mm).padStart(2,'0')}분`; };
+  if(isD1Solo){
+    // 소모시각 -30분 ~ -10분
+    return `${ft(cH, cM-30)}~${ft(cH, cM-10)}`;
+  } else {
+    // 소모시각 +30분 ~ +1시간
+    return `${ft(cH, cM+30)}~${ft(cH+1, cM)}`;
+  }
+}
 </script>
 </body>
 </html>
